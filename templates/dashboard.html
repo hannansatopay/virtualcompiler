@@ -54,7 +54,7 @@ button {
 
 .main {
   border-radius: 5px;
-  background-color: #f2f2f2;
+  background-color: white;
   padding: 20px;
 }
 
@@ -90,9 +90,8 @@ button {
 <body>
 <div class="topnav">
   <a class="active" href="javascript:void(0);">Dashboard</a>
-  <a href="">Report</a>
-  <a href="">Profile</a>
-  <a href="">Sign Out</a>
+  <a href="/report">Report</a>
+  <a href="/">Sign Out</a>
 </div>
 <div class="main">
   <form id="assignmentform" method="post" enctype="multipart/form-data">
@@ -104,6 +103,10 @@ button {
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
 $(document).ready(function() {
+  $(document).bind("contextmenu",function(e){
+  return false;
+    });
+
    $.ajax({
 		data : {
 		 email : localStorage.getItem("email"),
@@ -112,15 +115,17 @@ $(document).ready(function() {
 		 type : 'POST',
 		 url : '/fetchdashboard'
 		}).done(function(data) {
-		$("#form").html(data+'<input form="assignmentform" type="submit" value="Submit Assignment">');
+		$("#form").html(data);
   });
-  
+
   $(document).on("click", "#run", function () {
+     var q = $(this).siblings()[0];
      var codedata = $(this).siblings()[1];
-	var resultarea = $(this).siblings()[2];
+	   var resultarea = $(this).siblings()[2];
 	 $.ajax({
 		data : {
-		 code : $(codedata).val()
+		 code : $(codedata).val(),
+     language: $(q).text()
 		 },
 		 type : 'POST',
 		 url : '/runcode'
@@ -128,7 +133,7 @@ $(document).ready(function() {
 			$(resultarea).val(data);
   });
   });
-  
+
   $(document).on("submit", "form", function () {
   event.preventDefault();
   var formdata = new FormData();
@@ -143,25 +148,28 @@ $(document).ready(function() {
 	  }
 	  else if($(this).hasClass("document"))
 	  {
-		formdata.append('question', [$(this).text(),$(this).children()[1].files[0].name]);
+		  formdata.append('question', [$(this).text(),$(this).children()[1].files[0].name]);
 	    formdata.append('file', $(this).children()[1].files[0]);
 	  }
   });
+  formdata.append('student', localStorage.getItem("email"));
+  formdata.append('teacher', $("#teacher").text());
+  formdata.append('subject', $("#subject").text());
+  formdata.append('assignmentid', $("#assignmentid").text());
+
   console.log(Array.from(formdata));
-  //var formdata = new FormData($("form")[0])
-  //var formdata = new FormData();
-  //formdata.append('file', document.getElementById('fileinput').files[0]);
 	   $.ajax({
-	     data : formdata,
+	   data : formdata,
 		 processData: false,
 		 contentType: false,
 		 type : 'POST',
 		 url : '/submitassignment'
 		}).done(function(data) {
-	  alert("Assignment Submitted");
+	     alert("Assignment Submitted");
+       location.reload();
 	  });
-	  
+
   });
-  
+
 });
 </script>

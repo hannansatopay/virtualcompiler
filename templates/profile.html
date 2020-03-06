@@ -77,16 +77,16 @@ input[type=submit]:hover {
 </head>
 <body>
 <div class="topnav">
-  <a href="">Evaluate</a>
-  <a href="">Create Assignment</a>
-  <a class="active" href="javascript:void(0);">Profile</a>
-  <a href="">Sign Out</a>
+  <a href="/">Login</a>
+  <a class="active" href="javascript:void(0);">Change Password</a>
 </div>
 <div class="main">
 <form method="post">
     <label for="email">Email</label>
-    <input type="text" id="email" disabled>
-    <label for="password">Password</label>
+    <input type="text" id="email">
+    <label for="oldpassword">Old Password</label>
+    <input type="text" id="oldpassword">
+    <label for="password">New Password</label>
     <input type="text" id="password">
 <input type="submit" value="Update">
 </form>
@@ -95,17 +95,27 @@ input[type=submit]:hover {
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
  $(document).ready(function() {
-	 $("#email").val(localStorage.getItem("email"));
 	 $('form').on('submit', function(event) {
 	  $.ajax({
 	  data : {
-		 email: localStorage.getItem("email"),
-		 password: $("#password").val()
+		 email: $("#email").val(),
+		 oldpassword: $("#oldpassword").val(),
+     password: $("#password").val(),
 			 },
 		 type : 'POST',
 		 url : '/updatepassword'
 		}).done(function(data) {
-	  alert("Password Updated");
+      if(data == "-1"){
+  		alert("User not found");
+  	  }
+  	  else if(data == "0"){
+  		alert("Incorrect old password");
+  	  }
+      else if(data == "1"){
+       alert("Password Updated");
+       window.location.href = "/";
+      }
+
 	 });
 	  event.preventDefault();
 	  });

@@ -77,10 +77,9 @@ input[type=submit]:hover {
 </head>
 <body>
 <div class="topnav">
-  <a href="">Evaluate</a>
+  <a href="/evaluate">Evaluate</a>
   <a class="active" href="javascript:void(0);">Create Assignment</a>
-  <a href="">Profile</a>
-  <a href="">Sign Out </a>
+  <a href="/">Sign Out</a>
 </div>
 <div class="main">
 <form method="post">
@@ -119,18 +118,18 @@ input[type=submit]:hover {
  $(document).ready(function() {
 	var wrapper = $(".input_fields_wrap"); //Fields wrapper
 	var add_button = $(".add_field_button"); //Add button ID
-	
+
 	var x = 1; //initlal text box count
 	$(add_button).click(function(e){ //on add input button click
 		e.preventDefault();
 		x++; //text box increment
 		$(wrapper).append('<div><input type="text" class="questions"/><select class="types"><option value="java">Java</option><option value="python">Python</option><option value="c">C</option><option value="cpp">C++</option><option value="document">Document</option></select><a href="#" class="remove_field">Remove</a></div>'); //add input box
 	});
-	
+
 	$(wrapper).on("click",".remove_field", function(e){ //user click on remove text
 		e.preventDefault(); $(this).parent('div').remove(); x--;
 	})
-	
+
 	 $('form').on('submit', function(event) {
 	   var questions = document.getElementsByClassName("questions");
 	   var types = document.getElementsByClassName("types");
@@ -150,6 +149,7 @@ input[type=submit]:hover {
 		 url : '/createassignment'
 		}).done(function(data) {
 			alert("Assignment Posted");
+      location.reload();
 		 });
 	  event.preventDefault();
 	  });

@@ -64,25 +64,25 @@ input[type=submit]:hover {
 <body>
 <div class="topnav">
   <a class="active" href="javascript:void(0);">Login</a>
+  <a  href="/profile">Change Password</a>
 </div>
 <div class="main">
   <form method="post">
-	
+
 	<label for="email">Email</label>
     <input type="text" id="email">
-	
+
 	<label for="password">Password</label>
     <input type="text" id="password">
 
     <input type="submit" value="Login">
   </form>
-  
+
  </div>
 </body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
 $(document).ready(function() {
-console.log("Ready");
  $('form').on('submit', function(event) {
  console.log("Clicked");
    $.ajax({
@@ -106,14 +106,14 @@ console.log("Ready");
 			window.location.href = "/adduser";
 		}
 		else if(data["role"]=="teacher"){
-			window.location.href = "/addassignment";
+			window.location.href = "/evaluate";
 		}
 		else {
 			window.location.href = "/dashboard";
 		}
-		
+
 	  }
-	  
+
   });
   event.preventDefault();
   });
