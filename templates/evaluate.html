@@ -1,135 +1,144 @@
 <head>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-<style>
-input[type=text], select {
-  width: 100%;
-  padding: 12px 20px;
-  margin: 8px 0;
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+      margin: 10px;
+    }
 
-textarea {
-  width: 100%;
-  padding: 12px 20px;
-  margin: 8px 0;
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
+    input[type=text],
+    select {
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
 
-input[type=submit] {
-  width: 100%;
-  background-color: #4CAF50;
-  color: white;
-  padding: 14px 20px;
-  margin: 8px 0;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
+    textarea {
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
 
-input[type=submit]:hover {
-  background-color: #45a049;
-}
+    input[type=submit] {
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      padding: 14px 20px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    input[type=submit]:hover {
+      background-color: #45a049;
+    }
 
 
-button:hover {
-  background-color: #071e7b;
-}
+    button:hover {
+      background-color: #071e7b;
+    }
 
-button {
-  width: 100%;
-  background-color: #21399e;
-  color: white;
-  padding: 14px 20px;
-  margin: 8px 0;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
+    button {
+      width: 100%;
+      background-color: #21399e;
+      color: white;
+      padding: 14px 20px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
 
-.main {
-  border-radius: 5px;
-  background-color: white;
-  padding: 20px;
-}
+    .main {
+      border-radius: 5px;
+      background-color: white;
+      padding: 20px;
+    }
 
-/* Add a black background color to the top navigation */
-.topnav {
-  background-color: #333;
-  overflow: hidden;
-}
+    /* Add a black background color to the top navigation */
+    .topnav {
+      background-color: #333;
+      overflow: hidden;
+    }
 
-/* Style the links inside the navigation bar */
-.topnav a {
-  float: left;
-  color: #f2f2f2;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-  font-size: 17px;
-}
+    /* Style the links inside the navigation bar */
+    .topnav a {
+      float: left;
+      color: #f2f2f2;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+      font-size: 17px;
+    }
 
-/* Change the color of links on hover */
-.topnav a:hover {
-  background-color: #ddd;
-  color: black;
-}
+    /* Change the color of links on hover */
+    .topnav a:hover {
+      background-color: #ddd;
+      color: black;
+    }
 
-/* Add a color to the active/current link */
-.topnav a.active {
-  background-color: #4CAF50;
-  color: white;
-}
-</style>
+    /* Add a color to the active/current link */
+    .topnav a.active {
+      background-color: #4CAF50;
+      color: white;
+    }
+  </style>
 </head>
+
 <body>
-<div class="topnav">
-  <a class="active" href="javascript:void(0);">Evaluate</a>
-  <a href="/addassignment">Create Assignment</a>
-  <a href="/">Sign Out</a>
-</div>
-<div class="main">
-  <form id="assignmentform" method="post" enctype="multipart/form-data">
-  </form>
-  <div id="form">
+  <div class="topnav">
+    <a class="active" href="javascript:void(0);">Evaluate</a>
+    <a href="/addassignment">Create Assignment</a>
+    <a href="/">Sign Out</a>
   </div>
-</div>
+  <div class="main">
+    <form id="assignmentform" method="post" enctype="multipart/form-data">
+    </form>
+    <div id="form">
+    </div>
+  </div>
 </body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
-$(document).ready(function() {
-   $.ajax({
-		data : {
-		 email : localStorage.getItem("email")
-		 },
-		 type : 'POST',
-		 url : '/fetchassignment'
-		}).done(function(data) {
-		$("#form").html(data);
+  $(document).ready(function() {
+    $.ajax({
+      data: {
+        email: localStorage.getItem("email")
+      },
+      type: 'POST',
+      url: '/fetchassignment'
+    }).done(function(data) {
+      $("#form").html(data);
+    });
+
+
+    $(document).on("submit", "form", function() {
+      event.preventDefault();
+      $.ajax({
+        data: {
+          email: localStorage.getItem("email"),
+          assignmentid: $("#assignmentid").text(),
+          score: $("#score").val()
+        },
+        type: 'POST',
+        url: '/submitevaluation'
+      }).done(function(data) {
+        alert("Assignment Graded");
+        location.reload();
+      });
+
+    });
+
   });
-
-
-  $(document).on("submit", "form", function () {
-  event.preventDefault();
-  $.ajax({
-   data : {
-    email : localStorage.getItem("email"),
-    assignmentid : $("#assignmentid").text(),
-    score : $("#score").val()
-    },
-    type : 'POST',
-    url : '/submitevaluation'
-   }).done(function(data) {
-     alert("Assignment Graded");
-     location.reload();
- });
-
-  });
-
-});
 </script>
