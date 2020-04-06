@@ -1,7 +1,7 @@
 <head>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   <style>
-    input[type=text], input[type=password],
+    input[type=text],
     select {
       width: 100%;
       padding: 12px 20px;
@@ -25,6 +25,26 @@
 
     input[type=submit]:hover {
       background-color: #45a049;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 8px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
     }
 
     .main {
@@ -64,55 +84,45 @@
 
 <body>
   <div class="topnav">
-    <a class="active" href="javascript:void(0);">Login</a>
-    <a href="/profile">Change Password</a>
+    <a href="/evaluate">Evaluate</a>
+    <a href="/addassignment">Create Assignment</a>
+    <a class="active" href="javascript:void(0);">Report</a>
+    <a href="/">Sign Out</a>
   </div>
   <div class="main">
-    <form method="post">
+	  <form method="post">
 
-      <label for="email">Email</label>
-      <input type="text" id="email">
+		  <label for="email">Subject</label>
+		  <input type="text" id="subject">
+		  
+		  <label for="classgroup">Batch</label>
+		  <select id="classgroup">
+			<option value="a">1</option>
+			<option value="b">2</option>
+		    <option value="c">3</option>
+		    <option value="d">4</option>
+		  </select>
 
-      <label for="password">Password</label>
-      <input type="password" id="password">
-
-      <input type="submit" value="Login">
-    </form>
-
+		  <input type="submit" value="Fetch">
+	  </form>
+	  <div class="report"></div>
   </div>
 </body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>
   $(document).ready(function() {
-    $('form').on('submit', function(event) {
+	$('form').on('submit', function(event) {
       $.ajax({
-        data: {
-          email: $('#email').val(),
-          password: $('#password').val()
-        },
-        type: 'POST',
-        url: '/login'
-      }).done(function(data) {
-        if (data["data"] == -1) {
-          alert("User not found");
-        } else if (data["data"] == 0) {
-          alert("Incorrect password");
-        } else if (data["data"] == 1) {
-          localStorage.setItem("email", $('#email').val());
-          localStorage.setItem("semester", data["semester"]);
-          localStorage.setItem("classgroup", data["classgroup"]);
-          localStorage.setItem("role", data["role"]);
-          if (data["role"] == "admin") {
-            window.location.href = "/adduser";
-          } else if (data["role"] == "teacher") {
-            window.location.href = "/evaluate";
-          } else {
-            window.location.href = "/dashboard";
-          }
-
-        }
-
-      });
+		  data: {
+			email: localStorage.getItem("email"),
+			subject: $('#subject').val(),
+			classgroup: $('#classgroup').val()
+		  },
+		  type: 'POST',
+		  url: '/teacherreportrender'
+		}).done(function(data) {
+		  $(".report").html(data);
+		});
       event.preventDefault();
     });
   });

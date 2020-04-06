@@ -73,7 +73,7 @@
         email: localStorage.getItem("email")
       },
       type: 'POST',
-      url: '/reportrender'
+      url: '/studentreportrender'
     }).done(function(data) {
       $(".main").html(data);
     });

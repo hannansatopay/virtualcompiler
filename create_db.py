@@ -27,7 +27,9 @@ conn.execute('''CREATE TABLE SUBMISSION
           STUDENT TEXT NOT NULL,
           TEACHER TEXT NOT NULL,
           SUBJECT TEXT NOT NULL,
+          CLASSGROUP TEXT NOT NULL,
           STORAGE TEXT NOT NULL,
+          TIMESTAMP TEXT NOT NULL,
           SCORE NUMBER);''')
 
 print("Table created successfully")

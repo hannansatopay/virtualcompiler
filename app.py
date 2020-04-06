@@ -12,6 +12,7 @@ from flask import url_for
 from os.path import join, dirname, realpath
 from flask import send_from_directory
 import pandas as pd
+from datetime import datetime
 
 UPLOAD_FOLDER = join(dirname(realpath(__file__)), 'static/uploads/')
 
@@ -186,26 +187,35 @@ def runcode():
         f = open("HelloWorld.java", "w+")
         f.write(code)
         f.close()
-        subprocess.run(["javac HelloWorld.java"], shell=True)
-        command = subprocess.run(
-            ["java HelloWorld"], shell=True, stdout=subprocess.PIPE)
-        return str(command.stdout, "utf-8")
+        try:
+            subprocess.run(["javac HelloWorld.java"], shell=True)
+            command = subprocess.run(["java HelloWorld"], shell=True,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            return str(command.stdout, "utf-8")
+        except subprocess.CalledProcessError as e:
+            return str(e.stderr, "utf-8")
     if language == "c":
         f = open("demo.c", "w+")
         f.write(code)
         f.close()
-        subprocess.run(["cc demo.c -o demo"], shell=True)
-        command = subprocess.run(
-            ["./demo"], shell=True, stdout=subprocess.PIPE)
-        return str(command.stdout, "utf-8")
+        try:
+            subprocess.run(["cc demo.c -o demo"], shell=True)
+            command = subprocess.run(["./demo"], shell=True,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            return str(command.stdout, "utf-8")
+        except subprocess.CalledProcessError as e:
+            return str(e.stderr, "utf-8")
     if language == "cpp":
         f = open("demo.C", "w+")
         f.write(code)
         f.close()
-        subprocess.run(["g++ demo.C -o demo"], shell=True)
-        command = subprocess.run(
-            ["./demo"], shell=True, stdout=subprocess.PIPE)
-        return str(command.stdout, "utf-8")
+        try:
+            subprocess.run(["g++ demo.C -o demo"], shell=True)
+            command = subprocess.run(["./demo"], shell=True,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            return str(command.stdout, "utf-8")
+        except subprocess.CalledProcessError as e:
+            return str(e.stderr, "utf-8")        
 
 
 @app.route('/submitassignment', methods=['POST'])
@@ -215,10 +225,10 @@ def submitassignment():
     student = flask.request.form.getlist('student')
     teacher = flask.request.form.getlist('teacher')
     subject = flask.request.form.getlist('subject')
+    classgroup = flask.request.form.getlist('classgroup')
     assignmentid = flask.request.form.getlist('assignmentid')
     conn = sqlite3.connect('data.db')
-    conn.execute(
-        f"INSERT INTO SUBMISSION (ID, STUDENT, TEACHER, SUBJECT, STORAGE, SCORE) VALUES ('{id}', '{student[0]}', '{teacher[0]}', '{subject[0]}', '{json.dumps(question)}', '0');")
+    conn.execute(f"INSERT INTO SUBMISSION (ID, STUDENT, TEACHER, SUBJECT, CLASSGROUP, STORAGE, TIMESTAMP, SCORE) VALUES ('{id}', '{student[0]}', '{teacher[0]}', '{subject[0]}', '{classgroup[0]}', '{json.dumps(question)}', '{round(time.time())}', '0');")
     conn.commit()
     conn.close()
     conn = sqlite3.connect('data.db')
@@ -255,14 +265,14 @@ def fetchassignment():
         break
     for row in conn.execute(f"SELECT * FROM SUBMISSION WHERE TEACHER = '{email}';"):
         if (row[0] not in s):
-            d = json.loads(row[4])
+            d = json.loads(row[5])
             assignmentid = row[0]
+            timestamp = str(datetime.fromtimestamp(int(row[6])))
             student = conn.execute(f"SELECT NAME FROM USER WHERE EMAIL = '{row[1]}';").fetchone()
             subject = row[3]
             break
     conn.commit()
     conn.close()
-    data = "<div><table><tr><th>Name: "+student[0]+"</th><th>Subject: "+subject+"</th></tr></table></div>"
     try:
         d
     except NameError:
@@ -270,6 +280,7 @@ def fetchassignment():
     if(d is None):
         return jsonify("<div style='text-align: center;'>No more assignments to check.</div>")
     for element in d:
+        data = "<div><table><tr><th>Name: "+student[0]+"</th><th>Subject: "+subject+"</th><th>TIMESTAMP: "+timestamp+"</th></tr></table></div>"
         q = element.split(",")
         if(len(q) == 3):
             data = data + '''<div class="typecode"><label>''' + q[0] + '''</label> <textarea form ="assignmentform" rows="10" cols="90" id="question" disabled>''' + \
@@ -279,7 +290,9 @@ def fetchassignment():
             data = data + '''<div class="document"><label>''' + \
                 q[0] + '''</label><div><a style="padding-bottom: 10px;" target="_blank" href="/uploads/''' + \
                 q[1] + '''">View Document</a></div></div>'''
-    data = data + '<input type="text" id="score" placeholder="Add Score"><input form="assignmentform" type="submit" value="Grade Assignment">'
+    data = data + '<h3>Add Score:</h3>'
+    data = data + '<input type="number" id="score1" min="0" value="0"><input type="number" id="score2" min="0" value="0"><input type="number" id="score3" min="0" value="0"><input type="number" id="score4" min="0" value="0"><input type="number" id="score5" min="0" value="0"><input disabled type="number" id="totalscore" value="0">'
+    data = data + '<input form="assignmentform" type="submit" value="Grade Assignment">'
     data = data + '''<span id="assignmentid" style="display:none;">''' + \
         assignmentid + '''</span>'''
     return jsonify(data)
@@ -291,8 +304,7 @@ def submitevaluation():
     score = flask.request.form['score']
     email = flask.request.form['email']
     conn = sqlite3.connect('data.db')
-    conn.execute(
-        f"UPDATE SUBMISSION SET SCORE = '{score}' WHERE ID = '{assignmentid}';")
+    conn.execute(f"UPDATE SUBMISSION SET SCORE = '{score}' WHERE ID = '{assignmentid}';")
     conn.commit()
     conn.close()
     conn = sqlite3.connect('data.db')
@@ -306,19 +318,37 @@ def submitevaluation():
     return "1"
 
 
-@app.route('/report')
-def report():
-    return flask.render_template('report.html')
+@app.route('/studentreport')
+def studentreport():
+    return flask.render_template('studentreport.html')
 
 
-@app.route('/reportrender', methods=['POST'])
-def reportrender():
+@app.route('/studentreportrender', methods=['POST'])
+def studentreportrender():
     email = flask.request.form['email']
     conn = sqlite3.connect('data.db')
     ##query = f"SELECT SUBJECT, SUM (SCORE) FROM SUBMISSION WHERE STUDENT='{email}' GROUP BY SUBJECT;"
     query = f"SELECT ID, SUBJECT, SCORE FROM SUBMISSION WHERE STUDENT='{email}';"
     df = pd.read_sql_query(query, conn)
     df.columns = ['ID', 'SUBJECT', 'SCORE']
+    conn.close()
+    return jsonify(df.to_html(index=False))
+
+
+@app.route('/teacherreport')
+def teacherreport():
+    return flask.render_template('teacherreport.html')
+
+
+@app.route('/teacherreportrender', methods=['POST'])
+def teacherreportrender():
+    email = flask.request.form['email']
+    subject = flask.request.form['subject']
+    classgroup = flask.request.form['classgroup']
+    conn = sqlite3.connect('data.db')
+    query = f"SELECT ID, STUDENT, SCORE FROM SUBMISSION WHERE TEACHER='{email}' AND SUBJECT='{subject}' AND CLASSGROUP='{classgroup}';"
+    df = pd.read_sql_query(query, conn)
+    df.columns = ['ID', 'STUDENT', 'SCORE']
     conn.close()
     return jsonify(df.to_html(index=False))
 

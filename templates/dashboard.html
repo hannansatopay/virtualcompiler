@@ -92,7 +92,7 @@
 <body>
   <div class="topnav">
     <a class="active" href="javascript:void(0);">Dashboard</a>
-    <a href="/report">Report</a>
+    <a href="/studentreport">Report</a>
     <a href="/">Sign Out</a>
   </div>
   <div class="main">
@@ -145,24 +145,21 @@
     $(document).on("submit", "form", function() {
       event.preventDefault();
       var formdata = new FormData();
-      console.log($("#form").children());
       $("#form").children().each(function(index) {
         if ($(this).hasClass("typecode")) {
-          console.log($($(this).children()[0]).text());
-          console.log($($(this).children()[1]).val());
-          console.log($($(this).children()[3]).val());
           formdata.append('question', [$($(this).children()[0]).text(), $($(this).children()[1]).val(), $($(this).children()[3]).val()]);
         } else if ($(this).hasClass("document")) {
           formdata.append('question', [$(this).text(), $(this).children()[1].files[0].name]);
           formdata.append('file', $(this).children()[1].files[0]);
         }
       });
+	  
       formdata.append('student', localStorage.getItem("email"));
       formdata.append('teacher', $("#teacher").text());
       formdata.append('subject', $("#subject").text());
+	  formdata.append('classgroup', localStorage.getItem("classgroup"));
       formdata.append('assignmentid', $("#assignmentid").text());
 
-      console.log(Array.from(formdata));
       $.ajax({
         data: formdata,
         processData: false,
